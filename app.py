@@ -74,10 +74,12 @@ Be clear, polite, and student-friendly.
 Question:
 {question}
 """
+response = client.models.generate_content(
+    model="gemini-1.0-pro",
+    contents=prompt
+)
 
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt
+       
         )
 
         answer = response.text or "⚠️ I couldn’t generate a response."
@@ -90,6 +92,7 @@ Question:
         st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
+
 
 
 
