@@ -19,7 +19,8 @@ if not api_key:
 
 # Configure Gemini (STABLE SDK)
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel("models/gemini-1.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-flash")
+
 
 # ---------------- UI ----------------
 st.title("🏛️ PICA – Panimalar AI Assistant")
@@ -139,4 +140,5 @@ If unrelated, reply exactly:
         st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
+
 
