@@ -1,8 +1,7 @@
 import streamlit as st
 from google import genai
 
-
-# ---------------- PAGE CONFIG ----------------
+# ---------------- PAGE CONFIG (MUST BE FIRST) ----------------
 st.set_page_config(
     page_title="PICA: Panimalar AI Assistant",
     page_icon="🏛️",
@@ -16,7 +15,8 @@ if not api_key:
     st.error("❌ Gemini API key missing. Add it in Streamlit Secrets.")
     st.stop()
 
-genai.configure(api_key=api_key)
+# ✅ Correct client initialization (NEW SDK)
+client = genai.Client(api_key=api_key)
 
 # ---------------- TITLE ----------------
 st.title("🏛️ PICA: Panimalar Campus AI Assistant")
@@ -37,7 +37,7 @@ Placements:
 - L&T, Tech Mahindra, Oracle, Infosys, TCS
 
 Hostels:
-- Separate hostels
+- Separate hostels for boys and girls
 - 24/7 medical care
 - Wi-Fi enabled
 - Strict discipline
@@ -47,42 +47,51 @@ Hostels:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for m in st.session_state.messages:
-    with st.chat_message(m["role"]):
-        st.markdown(m["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
 # ---------------- CHAT INPUT ----------------
 question = st.chat_input("Ask anything about Panimalar or general questions")
 
 if question:
+    # User message
     st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):
         st.markdown(question)
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-
         prompt = f"""
-You are PICA, an AI assistant for Panimalar Engineering College.
+You are **PICA**, an AI assistant for Panimalar Engineering College.
 
-Use this information when relevant:
+If the question is about Panimalar, use this data:
 {CAMPUS_DATA}
 
-Answer clearly and politely.
+If it is a general question, answer normally.
+
+Be clear, polite, and student-friendly.
 
 Question:
 {question}
 """
-        response = model.generate_content(prompt)
-        answer = response.text or "⚠️ No response generated."
+
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
+
+        answer = response.text or "⚠️ I couldn’t generate a response."
 
     except Exception as e:
         answer = f"❌ Error: {e}"
 
+    # Assistant message
     with st.chat_message("assistant"):
         st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
+
+
 
 
 
