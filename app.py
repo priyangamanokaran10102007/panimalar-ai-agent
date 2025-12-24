@@ -1,5 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -82,6 +83,7 @@ Question:
         st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
+
 
 
 
