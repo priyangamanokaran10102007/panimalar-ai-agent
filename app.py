@@ -1,21 +1,23 @@
 import streamlit as st
 import google.generativeai as genai
 
-# ---------------- PAGE CONFIG (MUST BE FIRST) ----------------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="PICA: Panimalar AI Assistant",
     page_icon="🏛️",
     layout="centered"
 )
 
-# ---------------- API KEY CHECK ----------------
-if "GEMINI_API_KEY" not in st.secrets:
-    st.error("❌ GEMINI_API_KEY not found in Streamlit secrets")
+# ---------------- API KEY ----------------
+api_key = st.secrets.get("GEMINI_API_KEY")
+
+if not api_key:
+    st.error("❌ Gemini API key missing. Add it in Streamlit Secrets.")
     st.stop()
 
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+genai.configure(api_key=api_key)
 
-# ---------------- APP TITLE ----------------
+# ---------------- TITLE ----------------
 st.title("🏛️ PICA: Panimalar Campus AI Assistant")
 st.markdown("Your 24/7 guide to **Panimalar Engineering College**")
 
@@ -26,66 +28,62 @@ Panimalar Engineering College (Autonomous) is located in Chennai, Varadharajapur
 Mess:
 - One of Asia’s largest college mess facilities (2.45 lakh sq. ft)
 - Separate Veg and Non-Veg dining
-- Hygienic environment
 
 Transport:
-- 100+ college buses covering Chennai, Kancheepuram, Thiruvallur
+- 100+ college buses (Chennai, Kancheepuram, Thiruvallur)
 
 Placements:
-- Recruiters include L&T, Tech Mahindra, Oracle, Infosys, TCS
+- L&T, Tech Mahindra, Oracle, Infosys, TCS
 
 Hostels:
-- Separate hostels for boys and girls
+- Separate hostels
 - 24/7 medical care
 - Wi-Fi enabled
 - Strict discipline
 """
 
-# ---------------- CHAT HISTORY ----------------
+# ---------------- CHAT STATE ----------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
 
-# ---------------- USER INPUT ----------------
-user_prompt = st.chat_input("Ask about mess, transport, hostel, placements...")
+# ---------------- CHAT INPUT ----------------
+question = st.chat_input("Ask anything about Panimalar or general questions")
 
-if user_prompt:
-    # Store user message
-    st.session_state.messages.append({"role": "user", "content": user_prompt})
-
+if question:
+    st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):
-        st.markdown(user_prompt)
+        st.markdown(question)
 
-    # ---------------- GEMINI RESPONSE ----------------
     try:
         model = genai.GenerativeModel("gemini-1.5-flash")
 
-        full_prompt = f"""
+        prompt = f"""
 You are PICA, an AI assistant for Panimalar Engineering College.
 
-Use the following campus data when relevant:
+Use this information when relevant:
 {CAMPUS_DATA}
 
-If the question is not about Panimalar, answer normally.
+Answer clearly and politely.
 
-Student question:
-{user_prompt}
+Question:
+{question}
 """
-
-        response = model.generate_content(full_prompt)
-        reply = response.text if response.text else "⚠️ No response generated."
+        response = model.generate_content(prompt)
+        answer = response.text or "⚠️ No response generated."
 
     except Exception as e:
-        reply = f"❌ Error generating response: {e}"
+        answer = f"❌ Error: {e}"
 
-    # Assistant reply
     with st.chat_message("assistant"):
-        st.markdown(reply)
+        st.markdown(answer)
 
-    st.session_state.messages.append({"role": "assistant", "content": reply})
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+
+
 
 
 
