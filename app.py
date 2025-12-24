@@ -1,42 +1,83 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. Setup API Key (Get yours from Google AI Studio)
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+# ---------------- PAGE CONFIG (MUST BE FIRST) ----------------
+st.set_page_config(
+    page_title="PICA: Panimalar AI Assistant",
+    page_icon="🏛️",
+    layout="centered"
+)
 
-# 2. Define the Panimalar Knowledge Base
+# ---------------- API KEY CHECK ----------------
+if "GEMINI_API_KEY" not in st.secrets:
+    st.error("❌ GEMINI_API_KEY not found in Streamlit secrets")
+    st.stop()
+
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+# ---------------- APP TITLE ----------------
+st.title("🏛️ PICA: Panimalar Campus AI Assistant")
+st.markdown("Your 24/7 guide to **Panimalar Engineering College**")
+
+# ---------------- KNOWLEDGE BASE ----------------
 CAMPUS_DATA = """
-Panimalar Engineering College (Autonomous) is located in Chennai, Varadharajapuram. 
-Mess: It is famous for its massive mess (2.45 lakh sq. ft). Separate dining for Veg and Non-Veg. 
-Transport: Over 100+ buses covering Chennai, Kancheepuram, and Thiruvallur.
-Placements: Major partners include L&T, Tech Mahindra, and Oracle. 
-Hostels: 24/7 medical and water supply, Wi-Fi enabled, and strict discipline.
+Panimalar Engineering College (Autonomous) is located in Chennai, Varadharajapuram.
+
+Mess:
+- One of Asia’s largest college mess facilities (2.45 lakh sq. ft)
+- Separate Veg and Non-Veg dining
+- Hygienic and disciplined environment
+
+Transport:
+- 100+ college buses
+- Covers Chennai, Kancheepuram, and Thiruvallur districts
+
+Placements:
+- Strong placement record
+- Recruiters include L&T, Tech Mahindra, Oracle, Infosys, TCS
+
+Hostels:
+- Separate hostels for boys and girls
+- 24/7 medical care and water supply
+- Wi-Fi enabled
+- Strict discipline and security
 """
 
-st.set_page_config(page_title="PICA: Panimalar AI Assistant")
-st.title("🏛️ PICA: Panimalar Campus Agent")
-st.markdown("Your 24/7 guide to life at Panimalar Engineering College.")
-
-# 3. Chat Interface
+# ---------------- CHAT HISTORY ----------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-if prompt := st.chat_input("Ask about mess, transport, or placements..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+# ---------------- USER INPUT ----------------
+user_prompt = st.chat_input("Ask about mess, transport, hostel, placements, etc...")
+
+if user_prompt:
+    # Show user message
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.markdown(user_prompt)
 
-    # 4. AI Response Generation
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    full_prompt = f"Using this data: {CAMPUS_DATA}. Answer the student's question: {prompt}"
-    
-    response = model.generate_content(full_prompt)
-    
-    with st.chat_message("assistant"):
-        st.markdown(response.text)
-    st.session_state.messages.append({"role": "assistant", "content": response.text})
+    # ---------------- GEMINI RESPONSE ----------------
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        full_prompt = f"""
+You are PICA, an AI assistant for Panimalar Engineering College.
+
+Use ONLY the following campus information when relevant:
+{CAMPUS_DATA}
+
+If the question is general, answer helpfully like a normal AI.
+If the question is about Panimalar, answer clearly and politely.
+
+Student question:
+{user_prompt}
+"""
+
+        response = model.gen
+
+
 
