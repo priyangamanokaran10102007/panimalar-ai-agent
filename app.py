@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # 1. Setup API Key (Get yours from Google AI Studio)
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
 
 # 2. Define the Panimalar Knowledge Base
 CAMPUS_DATA = """
@@ -39,3 +39,4 @@ if prompt := st.chat_input("Ask about mess, transport, or placements..."):
     with st.chat_message("assistant"):
         st.markdown(response.text)
     st.session_state.messages.append({"role": "assistant", "content": response.text})
+
