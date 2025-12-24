@@ -26,21 +26,19 @@ Panimalar Engineering College (Autonomous) is located in Chennai, Varadharajapur
 Mess:
 - One of Asia’s largest college mess facilities (2.45 lakh sq. ft)
 - Separate Veg and Non-Veg dining
-- Hygienic and disciplined environment
+- Hygienic environment
 
 Transport:
-- 100+ college buses
-- Covers Chennai, Kancheepuram, and Thiruvallur districts
+- 100+ college buses covering Chennai, Kancheepuram, Thiruvallur
 
 Placements:
-- Strong placement record
 - Recruiters include L&T, Tech Mahindra, Oracle, Infosys, TCS
 
 Hostels:
 - Separate hostels for boys and girls
-- 24/7 medical care and water supply
+- 24/7 medical care
 - Wi-Fi enabled
-- Strict discipline and security
+- Strict discipline
 """
 
 # ---------------- CHAT HISTORY ----------------
@@ -52,11 +50,12 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
 
 # ---------------- USER INPUT ----------------
-user_prompt = st.chat_input("Ask about mess, transport, hostel, placements, etc...")
+user_prompt = st.chat_input("Ask about mess, transport, hostel, placements...")
 
 if user_prompt:
-    # Show user message
+    # Store user message
     st.session_state.messages.append({"role": "user", "content": user_prompt})
+
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
@@ -67,17 +66,28 @@ if user_prompt:
         full_prompt = f"""
 You are PICA, an AI assistant for Panimalar Engineering College.
 
-Use ONLY the following campus information when relevant:
+Use the following campus data when relevant:
 {CAMPUS_DATA}
 
-If the question is general, answer helpfully like a normal AI.
-If the question is about Panimalar, answer clearly and politely.
+If the question is not about Panimalar, answer normally.
 
 Student question:
 {user_prompt}
 """
 
-        response = model.gen
+        response = model.generate_content(full_prompt)
+        reply = response.text if response.text else "⚠️ No response generated."
+
+    except Exception as e:
+        reply = f"❌ Error generating response: {e}"
+
+    # Assistant reply
+    with st.chat_message("assistant"):
+        st.markdown(reply)
+
+    st.session_state.messages.append({"role": "assistant", "content": reply})
+
+
 
 
 
